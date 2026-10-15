@@ -1,0 +1,59 @@
+{
+  "id": null,
+  "uid": "ai-knowledge-api-performance",
+  "title": "AI Knowledge Assistant — API Performance",
+  "tags": ["ai-knowledge-assistant", "api", "prometheus"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "Backend availability", "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "min(up{job=\"ai-knowledge-assistant\"})", "legendFormat": "up", "refId": "A" }],
+      "fieldConfig": { "defaults": { "mappings": [{ "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }], "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "orientation": "auto", "colorMode": "background", "graphMode": "area", "textMode": "auto" }
+    },
+    {
+      "id": 2, "type": "stat", "title": "Requests (selected range)", "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "sum(increase(http_requests_total{job=\"ai-knowledge-assistant\"}[$__range]))", "legendFormat": "requests", "refId": "A" }], "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "value", "graphMode": "area", "textMode": "auto" }
+    },
+    {
+      "id": 3, "type": "stat", "title": "Average latency (5m)", "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "sum(rate(http_request_duration_highr_seconds_sum{job=\"ai-knowledge-assistant\"}[5m])) / clamp_min(sum(rate(http_request_duration_highr_seconds_count{job=\"ai-knowledge-assistant\"}[5m])), 1e-9)", "legendFormat": "seconds", "refId": "A" }], "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] }, "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "value", "graphMode": "area", "textMode": "auto" }
+    },
+    {
+      "id": 4, "type": "stat", "title": "5xx error rate (5m)", "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "100 * sum(rate(http_requests_total{job=\"ai-knowledge-assistant\",status=\"5xx\"}[5m])) / clamp_min(sum(rate(http_requests_total{job=\"ai-knowledge-assistant\"}[5m])), 1e-9)", "legendFormat": "percent", "refId": "A" }], "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 5 }] } }, "overrides": [] }, "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "colorMode": "value", "graphMode": "area", "textMode": "auto" }
+    },
+    {
+      "id": 5, "type": "timeseries", "title": "Requests per second", "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "sum by (method) (rate(http_requests_total{job=\"ai-knowledge-assistant\"}[5m]))", "legendFormat": "{{method}}", "refId": "A" }], "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 12, "showPoints": "never" } }, "overrides": [] }, "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "Latency percentiles", "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_highr_seconds_bucket{job=\"ai-knowledge-assistant\"}[5m])))", "legendFormat": "p95", "refId": "A" },
+        { "expr": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_highr_seconds_bucket{job=\"ai-knowledge-assistant\"}[5m])))", "legendFormat": "p99", "refId": "B" }
+      ], "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 8, "showPoints": "never" } }, "overrides": [] }, "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "id": 7, "type": "piechart", "title": "HTTP status distribution", "gridPos": { "x": 0, "y": 12, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "sum by (status) (increase(http_requests_total{job=\"ai-knowledge-assistant\"}[$__range]))", "legendFormat": "{{status}}", "refId": "A", "instant": true }], "options": { "legend": { "displayMode": "list", "placement": "right", "showLegend": true }, "pieType": "donut", "displayLabels": ["name", "percent"] }
+    },
+    {
+      "id": 8, "type": "barchart", "title": "Slowest endpoints — average latency", "gridPos": { "x": 8, "y": 12, "w": 16, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "topk(10, sum by (handler) (rate(http_request_duration_seconds_sum{job=\"ai-knowledge-assistant\"}[5m])) / clamp_min(sum by (handler) (rate(http_request_duration_seconds_count{job=\"ai-knowledge-assistant\"}[5m])), 1e-9))", "legendFormat": "{{handler}}", "refId": "A", "instant": true }], "fieldConfig": { "defaults": { "unit": "s", "custom": { "axisLabel": "Average duration", "drawStyle": "line" } }, "overrides": [] }, "options": { "orientation": "horizontal", "xField": "handler", "legend": { "displayMode": "hidden" }, "tooltip": { "mode": "single" } }
+    }
+  ],
+  "annotations": { "list": [{ "builtIn": 1, "datasource": { "type": "grafana", "uid": "-- Grafana --" }, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard" }] }
+}

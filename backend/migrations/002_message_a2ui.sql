@@ -1,0 +1,2 @@
+ALTER TABLE messages
+    ADD COLUMN IF NOT EXISTS a2ui JSONB NOT NULL DEFAULT '[]'::jsonb;
