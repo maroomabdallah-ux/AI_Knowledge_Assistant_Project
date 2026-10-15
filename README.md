@@ -5,7 +5,7 @@ A learning-oriented React + FastAPI starter for a document-based AI assistant.
 ## Implemented
 - React + TypeScript chat interface
 - FastAPI health and chat endpoints
-- Optional OpenAI model call via server-side API key
+- Gemini model calls and embeddings via a server-side API key
 - PostgreSQL with pgvector Docker service (prepared, not yet connected)
 
 ## Planned (not implemented yet)
@@ -14,13 +14,13 @@ A learning-oriented React + FastAPI starter for a document-based AI assistant.
 - OpenTelemetry instrumentation, Prometheus, Tempo, Grafana dashboards
 
 ## Requirements
-Python 3.11+, Node.js 20+, Docker Desktop, optional OpenAI API key.
+Python 3.11+, Node.js 20+, Docker Desktop, Gemini API key.
 
 ## Start
 1. `docker compose up -d`
 2. `cd backend && python3 -m venv .venv && source .venv/bin/activate`
 3. `pip install -r requirements.txt`
-4. `cp .env.example .env` and set `OPENAI_API_KEY` if needed.
+4. `cp .env.example .env` and set `GEMINI_API_KEY` in `backend/.env`.
 5. `uvicorn app.main:app --reload`
 6. In another terminal: `cd frontend && npm install && npm run dev`
 7. Open http://localhost:5173
@@ -29,7 +29,7 @@ Backend API documentation: http://localhost:8000/docs
 
 Note: Backend currently reads environment variables from the shell. To load the
 .env file automatically, use `set -a; source .env; set +a` before running uvicorn.
-Never commit real API keys.
+Never commit real API keys. Re-upload documents after switching embedding providers.
 
 ### OCR for scanned PDFs (macOS)
 
